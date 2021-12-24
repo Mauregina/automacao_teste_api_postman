@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "4b661ecf-95a2-42ff-962e-48bf83573739",
-		"name": "ProjetoServeRest",
+		"name": "TestesConformidade",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -92,12 +92,12 @@
 											"    }  \r",
 											"    else if (route == \"deletar\") {\r",
 											"        json_ = return_.json();\r",
-											"        console.log(json_.message)\r",
+											"        console.log(json_.message);\r",
 											"    }         \r",
 											"}\r",
 											"setTimeout(function () { execute_request(\"buscar\") }, 500);\r",
 											"setTimeout(function () { execute_request(\"deletar\") }, 1000);\r",
-											"setTimeout(function () { () => {} }, 1500);\r",
+											"setTimeout(function () { () => {} }, 2000);\r",
 											""
 										],
 										"type": "text/javascript"
@@ -246,10 +246,6 @@
 							"response": []
 						}
 					]
-				},
-				{
-					"name": "Contrato",
-					"item": []
 				}
 			]
 		},
@@ -283,6 +279,93 @@
 										],
 										"type": "text/javascript"
 									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"function sendRequest(req) {\r",
+											"    return new Promise((resolve, reject) => {\r",
+											"        pm.sendRequest(req, (err, res) => {\r",
+											"            if (err) { return reject(err); }\r",
+											"            return resolve(res);\r",
+											"        })\r",
+											"    });\r",
+											"}\r",
+											"\r",
+											"async function execute_request(route) {\r",
+											"    let request_, requestText, return_, json_;\r",
+											"    let cadastrado = pm.collectionVariables.get(\"usuario_cadastrado\");\r",
+											"\r",
+											"    if (route == \"buscar\") {\r",
+											"        pm.collectionVariables.set(\"usuario_cadastrado\", false);\r",
+											"        request_ = pm.collectionVariables.get(\"url\") + 'usuarios';\r",
+											"    }\r",
+											"    else if ((route == \"cadastrar\") && (cadastrado == false)){\r",
+											"        request_ = pm.collectionVariables.get(\"url\") + 'usuarios';\r",
+											"    }\r",
+											"\r",
+											"    if (route == \"buscar\") {\r",
+											"        requestText = {\r",
+											"            url: request_,\r",
+											"            method: \"GET\"\r",
+											"        }\r",
+											"    }\r",
+											"    else if ((route == \"cadastrar\") && (cadastrado == false)){\r",
+											"        let nome = pm.collectionVariables.get(\"nome_usuario\");\r",
+											"        nome2 = nome.replace(/\\\"/g, \"\");\r",
+											"        let email = pm.collectionVariables.get(\"email_usuario\");\r",
+											"        email2 = email.replace(/\\\"/g, \"\");\r",
+											"        let senha = pm.collectionVariables.get(\"senha_usuario\");\r",
+											"        senha2 = senha.replace(/\\\"/g, \"\");\r",
+											"        let administrador = pm.collectionVariables.get(\"adm_usuario\");\r",
+											"        administrador2 = administrador.replace(/\\\"/g, \"\");\r",
+											"\r",
+											"        requestText = {\r",
+											"            url: request_,\r",
+											"            method: \"POST\",\r",
+											"            header: { 'content-type': 'application/json' },\r",
+											"            body: {\r",
+											"                mode: 'raw', raw: JSON.stringify({\r",
+											"                    \"nome\":nome2,\r",
+											"                    \"email\":email2,\r",
+											"                    \"password\":senha2,\r",
+											"                    \"administrador\":administrador2\r",
+											"                })\r",
+											"            }\r",
+											"        }\r",
+											"    }\r",
+											"\r",
+											"    return_ = await sendRequest(requestText);\r",
+											"\r",
+											"    if (route == \"buscar\") {\r",
+											"        json_ = return_.json();\r",
+											"        const email_usuario = pm.collectionVariables.get(\"email_usuario\");\r",
+											"\r",
+											"        for (let i = 0; i < json_.quantidade; i++) {\r",
+											"            if (\"\\\"\" + json_.usuarios[i].email + \"\\\"\" == email_usuario) {\r",
+											"                console.log(\"usuario ja existente! id = \", json_.usuarios[i]._id);\r",
+											"                pm.collectionVariables.set(\"id_usuario\", json_.usuarios[i]._id);\r",
+											"                pm.collectionVariables.set(\"usuario_cadastrado\", true);\r",
+											"                break;\r",
+											"            }\r",
+											"        }\r",
+											"    }\r",
+											"    else if ((route == \"cadastrar\") && (cadastrado == false)){\r",
+											"        json_ = return_.json();\r",
+											"        pm.collectionVariables.set(\"id_usuario\", json_._id);\r",
+											"        console.log(json_.message);\r",
+											"        console.log(json_._id);\r",
+											"    }\r",
+											"}\r",
+											"\r",
+											"setTimeout(function () { execute_request(\"buscar\") }, 1000);\r",
+											"setTimeout(function () { execute_request(\"cadastrar\") }, 2000);\r",
+											"setTimeout(function () { () => { } }, 2000);\r",
+											""
+										],
+										"type": "text/javascript"
+									}
 								}
 							],
 							"request": {
@@ -307,10 +390,6 @@
 							"response": []
 						}
 					]
-				},
-				{
-					"name": "Contrato",
-					"item": []
 				}
 			]
 		},
@@ -377,10 +456,18 @@
 											"    }\r",
 											"\r",
 											"    if (route == \"logar\") {\r",
+											"        let email = pm.collectionVariables.get(\"email_usuario\");\r",
+											"        let senha = pm.collectionVariables.get(\"senha_usuario\");\r",
 											"        requestText = {\r",
 											"            url: request_,\r",
 											"            method: \"POST\",\r",
-											"            body: { mode: 'raw', raw: JSON.stringify({ \"email\": \"maura@gmail.com.br\" , \"password\": \"teste\"}) }\r",
+											"            header: { 'content-type': 'application/json' },\r",
+											"            body: {\r",
+											"                mode: 'raw', raw: JSON.stringify({\r",
+											"                    \"email\":email2,\r",
+											"                    \"password\":senha2\r",
+											"                })\r",
+											"            }            \r",
 											"        }\r",
 											"    }\r",
 											"    else if (route == \"buscar\") {\r",
@@ -594,10 +681,6 @@
 							"response": []
 						}
 					]
-				},
-				{
-					"name": "Contrato",
-					"item": []
 				}
 			]
 		},
@@ -836,10 +919,6 @@
 							"response": []
 						}
 					]
-				},
-				{
-					"name": "Contrato",
-					"item": []
 				}
 			]
 		}
@@ -927,6 +1006,10 @@
 		},
 		{
 			"key": "qtd_carrinho",
+			"value": ""
+		},
+		{
+			"key": "usuario_cadastrado",
 			"value": ""
 		}
 	]
